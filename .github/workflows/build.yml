@@ -1,5 +1,10 @@
 name: Android APK
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -12,6 +17,10 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: '15859902'
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
       - run: sdkmanager 'platforms;android-37.2' 'build-tools;36.0.0'
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew testDebugUnitTest lintDebug assembleDebug
