@@ -1,0 +1,10 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+<uses-permission android:name="android.permission.INTERNET"/><uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+<uses-permission android:name="android.permission.WAKE_LOCK" tools:node="remove"/><uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" tools:node="remove"/>
+<application android:name=".BudgetApplication" android:label="Actual Budget" android:icon="@drawable/ic_launcher" android:roundIcon="@drawable/ic_launcher" android:theme="@style/AppTheme" android:allowBackup="false" android:fullBackupContent="false" android:dataExtractionRules="@xml/data_extraction_rules" android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config">
+<!-- Removal directive only: the receiver is intentionally absent from the merged APK. -->
+<receiver android:name="androidx.profileinstaller.ProfileInstallReceiver" tools:node="remove" tools:ignore="MissingClass"/>
+<activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTask" android:windowSoftInputMode="adjustResize" android:enableOnBackInvokedCallback="true">
+<intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+<meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+</activity></application></manifest>

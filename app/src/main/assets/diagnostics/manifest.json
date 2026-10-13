@@ -1,0 +1,1 @@
+{"manifest_version":2,"name":"Actual compatibility diagnostics","version":"1.0","browser_specific_settings":{"gecko":{"id":"diagnostics@actualbudget.wrapper"}},"permissions":["nativeMessaging","nativeMessagingFromContent","geckoViewAddons"],"content_scripts":[{"matches":["http://*/*","https://*/*"],"js":["probe.js"],"run_at":"document_idle","all_frames":false}]}
