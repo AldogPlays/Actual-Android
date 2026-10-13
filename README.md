@@ -8,7 +8,7 @@ Open your budget in a dedicated app with no browser toolbar. Configure preferred
 
 ## Download
 
-Download the signed APK from [GitHub Releases](https://github.com/AldogPlays/Actual-Android/releases). Use the release APK for updates; GitHub Actions debug artifacts use a different signing identity.
+Download the signed APK from [GitHub Releases](https://github.com/AldogPlays/Actual-Android/releases). Use the release APK for updates; debug APKs built with another signing key cannot update it.
 
 See the [1.0.0 release notes](docs/release-notes-1.0.0.md) and [build and signing instructions](docs/BUILDING.md).
 
@@ -105,7 +105,7 @@ Debug output:
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
-GitHub Actions runs these checks and uploads a debug APK for pushes and pull requests. Public release APKs are built and signed locally with the retained certificate; the private key is never uploaded to Actions. See [BUILDING.md](docs/BUILDING.md).
+Builds and checks run locally. GitHub Actions is disabled for this repository, and no workflow files are included. Public release APKs are built and signed locally with the retained certificate; the private key stays outside Git. See [BUILDING.md](docs/BUILDING.md).
 
 ## Project
 

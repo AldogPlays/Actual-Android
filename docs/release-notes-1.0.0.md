@@ -16,7 +16,7 @@ First release of a dedicated Android wrapper for self-hosted Actual Budget, usin
 
 Download `actual-budget-1.0.0-arm64.apk` and optionally its `SHA256SUMS` file. Android 10+ and arm64 are required. Connect to your own HTTPS Actual server with valid TLS and Actual's COOP/COEP headers.
 
-The distributed APK uses the non-debuggable **release variant**. It retains the same local signing certificate as the initial working 0.1.0 debug APK, so an in-place update preserves the app's profile and configuration. The retained certificate is labelled Android Debug; its private keystore stays outside the repository. CI debug APKs built elsewhere cannot be assumed to share that certificate.
+The distributed APK uses the non-debuggable **release variant**. It retains the same local signing certificate as the initial working 0.1.0 debug APK, so an in-place update preserves the app's profile and configuration. The retained certificate is labelled Android Debug; its private keystore stays outside the repository. Debug APKs built elsewhere cannot be assumed to share that certificate. Builds and checks are local; GitHub Actions is disabled.
 
 Export/sync before uninstalling or clearing browser data. Signing-key mismatch requires resolving the signing identity, not silently deleting your budgets.
 
