@@ -1,5 +1,13 @@
 # Validation record — October 13, 2026
 
+## Direct-launch change — October 20, 2026
+
+- Configured cold launches, Connect and Retry now open the preferred URL through Gecko without a prerequisite native probe or connection review. Existing sessions still resume without reloading.
+- Background probe failures show a brief notice and preserve the visible page. Actual browser network load failures retain native recovery and fallback review; TLS failures do not silently switch origins.
+- `testDebugUnitTest lintDebug assembleDebug` passed on Linux: all three existing JVM tests passed, and a debug APK was produced. These tests cover URL parsing and native probes, not Android launch behavior.
+- Validation used the available JDK 21 with Java/Kotlin target 17, a temporary Android SDK 37.2/build-tools 36.0.0 installation, and a command-line AAPT2 override for NixOS. No machine-specific paths or build configuration changes were committed.
+- Cold launch, cached offline use, fallback recovery and TLS rejection still require on-device acceptance testing using the checklist below. No device test or new signed release is claimed.
+
 ## Verified on Linux
 
 - Examined LubeLogger-Android reference commit `0ea4e69235b2ea4a6df3460980930dd9a13e6b1a`, including its native Activity, probes, WebView configuration and Gradle files.
@@ -44,7 +52,7 @@ Use a disposable budget and an arm64 GrapheneOS device with networking permitted
 |---|---|---|
 | Install debug APK | Android accepts package and launcher icon appears | User-reported app use; exact device not recorded |
 | First launch | Native URL setup; no personal address prefilled | Not tested |
-| Connect, relaunch | Encrypted settings retained; saved browser data retained | Not tested |
+| Connect, cold relaunch, Retry | Preferred URL opens without connection review or prerequisite probe; saved browser data retained | Not tested |
 | HTTPS custom port + path | Configured path/port used without truncation | Not tested |
 | Tailscale/Headscale, IPv4, IPv6 | Reachable while appropriate network is connected | Not tested |
 | HTTP warning | Explicit warning; isolation failure accurately diagnosed | Not tested |
@@ -60,7 +68,8 @@ Use a disposable budget and an arm64 GrapheneOS device with networking permitted
 | Actual initialize/sync | Disposable budget initializes, edits and syncs with server | Not tested |
 | Offline/cache behavior | Existing data retained; no destructive recovery | Not tested |
 | Preferred/fallback | Bounded probes; review before cross-origin switch; independent data retained | Not tested |
-| Brief network fluctuations | Healthy page not reloaded or switched | Not tested |
+| Brief network fluctuations / offline cached page | Background probe failure leaves current content visible; no recovery screen or switch | Not tested |
+| Browser network load failure | Recovery controls appear; reachable fallback requires review before opening | Not tested |
 | Rotation/process death | No rotation reload; state restoration where available; profile remains | Not tested |
 | External navigation | Unapproved origin blocked pending choice; approved auth can return | Not tested |
 | File import/export | Document picker works; exported budget readable; cancellation safe | Not tested |

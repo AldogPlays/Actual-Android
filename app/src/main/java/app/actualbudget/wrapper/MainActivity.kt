@@ -129,26 +129,9 @@ class MainActivity : Activity() {
         AlertDialog.Builder(this).setTitle(title).setMessage(message).setNegativeButton("Cancel", null).setPositiveButton("Continue") { _,_ -> action() }.show()
     }
     private fun connect() {
-        val token = ++generation; busy = true
-        val p = page("Connecting", "Checking preferred server, then fallback when appropriate…")
-        p.addView(ProgressBar(this)); p.button("Configure servers") { settings() }
-        worker.execute {
-            val results = mutableListOf<Pair<Server,Health>>()
-            var selected: Pair<Server,Health>? = null
-            for(s in servers) {
-                val h = ServerProbe.check(s); results.add(s to h)
-                if(h.usable) { selected = s to h; break }
-                // Certificate failures require user attention, never silently hide them with failover.
-                if(h.kind == HealthKind.TLS_ERROR) break
-            }
-            runOnUiThread {
-                if(token != generation || isDestroyed) return@runOnUiThread
-                busy = false
-                val target = selected
-                if(target == null) unavailable(results.joinToString("\n") { (s,h) -> "${if(s == servers.first()) "Preferred" else "Fallback"}: ${h.detail}" })
-                else review(target.first, target.second)
-            }
-        }
+        val preferred = servers.firstOrNull() ?: return settings()
+        // Let Gecko use its authenticated profile and cache before considering failover.
+        load(preferred)
     }
     private fun review(server: Server, health: Health) {
         val old = app.active
@@ -161,12 +144,12 @@ class MainActivity : Activity() {
         p.button("Configure servers") { settings() }
     }
     private fun load(server: Server) {
-        generation++
+        generation++; busy = false
         if(app.session == null) {
             app.session = GeckoSession().apply { open(app.runtime) }
             bindSession()
         }
-        app.active = server; app.diagnostics = null
+        app.active = server; app.diagnostics = null; app.state = null; app.location = null
         showBrowser()
         val session = app.session!!
         val token = generation
@@ -175,7 +158,11 @@ class MainActivity : Activity() {
             if(token == generation && !isDestroyed && app.session === session) {
                 app.extension = extension; bindSession(); session.loadUri(server.url)
             }
-        }, { unavailable("Could not initialize the compatibility diagnostic extension. Retry before opening Actual.") })
+        }, {
+            if(token == generation && !isDestroyed && app.session === session) {
+                unavailable("Could not initialize the compatibility diagnostic extension. Retry before opening Actual.")
+            }
+        })
     }
     private fun bindSession() {
         val session = app.session ?: return
@@ -202,7 +189,9 @@ class MainActivity : Activity() {
                 return result
             }
             override fun onLoadError(session: GeckoSession, uri: String?, error: WebRequestError): GeckoResult<String>? {
+                val token = generation
                 handler.post {
+                    if(token != generation || isDestroyed || app.session !== session || !browsing) return@post
                     if(error.category == WebRequestError.ERROR_CATEGORY_NETWORK && Server.origin(uri.orEmpty()) == app.active?.origin) recoverAfterLoadError()
                     else unavailable("Browser could not load the page (category ${error.category}, code ${error.code}). Check connectivity and the server certificate. TLS exceptions are never allowed.")
                 }
@@ -293,14 +282,13 @@ class MainActivity : Activity() {
             val h = ServerProbe.check(current)
             // One second probe protects against transient loss; no recurring retry loop.
             val second = if(h.kind == HealthKind.UNREACHABLE) ServerProbe.check(current) else h
-            val replacement = if(!second.usable && second.kind != HealthKind.TLS_ERROR) servers.filter { it != current }.map { it to ServerProbe.check(it) }.firstOrNull { it.second.usable } else null
             runOnUiThread {
                 if(token != generation || isDestroyed) return@runOnUiThread
                 busy = false
                 if(!browsing) return@runOnUiThread
-                if(replacement != null) review(replacement.first, replacement.second)
-                else if(!second.usable) unavailable(second.detail)
-                // A healthy page is never reloaded just because network capabilities changed.
+                // A native probe has no browser cookies and cannot judge cached-page usability.
+                // Only an actual Gecko load failure may replace the page or offer failover.
+                if(!second.usable) Toast.makeText(this, "Server check failed. You can keep using this page or open Servers & settings.", Toast.LENGTH_LONG).show()
             }
         }
     }

@@ -56,7 +56,7 @@ Click a screenshot to view it larger.
 - **Dedicated browser engine** — Bundled GeckoView, with no address bar, tabs or permanent app toolbar. Android system bars and keyboard insets are handled by the native container.
 - **Flexible servers** — Preferred and optional fallback URLs, custom ports, path prefixes, LAN addresses and overlay-network hostnames.
 - **Persistent configuration** — Server settings encrypted with an Android Keystore key; cookies, authentication and browser storage remain in the app's private Gecko profile.
-- **Safe connection recovery** — Bounded reachability checks, network-change detection and native Retry/Configure Servers screens. Healthy pages are not reloaded just because the network changes.
+- **Direct launch and connection recovery** — Opens your saved preferred server immediately, with bounded recovery checks and native Retry/Configure Servers screens after browser load failures. Network checks leave the current page visible.
 - **Actual compatibility diagnostics** — Page-context checks for secure context, cross-origin isolation, SharedArrayBuffer, WebAssembly and storage/worker APIs, with engine version information.
 - **Native integration** — Back gestures, launcher settings shortcut, file selection and confirmed downloads through Android document pickers.
 
@@ -64,14 +64,14 @@ Click a screenshot to view it larger.
 
 1. Install the release APK and open **Actual Budget**.
 2. Enter your **Preferred Server URL**, for example `https://actual.example.com:5006`. Optionally add a fallback URL.
-3. Tap **Connect**, review the connection result, and open Actual. Sign in to your server as usual.
+3. Tap **Connect** to open Actual. Sign in to your server as usual. Later launches open your saved preferred server directly, without a connection confirmation screen.
 4. Open settings later by long-pressing the launcher icon and choosing **Servers & settings**. A two-finger hold inside the app is also available.
 
 Actual requires a secure context and the server headers `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`. Check **GeckoView diagnostics** if initialization fails. HTTP can be configured after an insecure-transport warning, but usually cannot meet Actual's requirements. Invalid TLS certificates are never bypassed.
 
 ## Connection and local data
 
-The preferred server is checked first. When it is unavailable, a reachable fallback can be offered. Authentication pages and reverse-proxy redirects are reviewed rather than rejected based on page titles.
+The saved preferred server opens directly using the persistent browser profile. After a browser network load failure, recovery checks can offer a reachable fallback. Background network checks never replace the current page or switch servers. Authentication pages are accepted without matching page titles; navigation to another origin requires approval.
 
 **Different origins have separate logins and local budgets.** Review an origin change before switching; you may need to log in and initialize the budget at the other address. Failover never clears or migrates budget data. Explicit browser-data deletion requires a destructive-action confirmation. Synchronize/export before deleting data or uninstalling.
 
