@@ -13,7 +13,9 @@ Small patch release that opens Actual directly after server setup.
 
 The release asset is `actual-budget-1.0.1-arm64.apk`, with `SHA256SUMS` for verification. Android 10+ and arm64 are required. Version code is 3.
 
-An update from 1.0.0 must use the original signing certificate to preserve the existing installation, server settings, logins and local budgets. Do not uninstall or clear browser data to work around a signing mismatch.
+**One-time reinstall required for 1.0.0 users.** The original signing key was lost, so 1.0.1 starts a new signing identity and cannot install over 1.0.0. Before uninstalling, synchronize and export your budgets from the old app, and verify that your export or synchronized budget is available. Uninstalling deletes local budgets, unsynced changes, logins and server settings. Then install 1.0.1, configure your server and reopen or import your budgets.
+
+Future releases will retain the new certificate for in-place updates. Its SHA-256 fingerprint is `a35d2bf5749c646485ff273dc10c3864235f0567216d8059da5b620c1c7d7d4a`.
 
 ## Validation
 

@@ -8,7 +8,7 @@ Open your budget in a dedicated app with no browser toolbar. Configure preferred
 
 ## Download
 
-Download the signed APK from [GitHub Releases](https://github.com/AldogPlays/Actual-Android/releases). Use the release APK for updates; debug APKs built with another signing key cannot update it.
+Download the signed APK from [GitHub Releases](https://github.com/AldogPlays/Actual-Android/releases). **1.0.0 users need a one-time reinstall because the original signing key was lost. Sync and export your budgets before uninstalling; uninstalling deletes local data.** See the [migration instructions](docs/release-notes-1.0.1.md). Future release APKs will retain the new signing identity for updates.
 
 See the [1.0.1 release notes](docs/release-notes-1.0.1.md) and [build and signing instructions](docs/BUILDING.md).
 

@@ -1,11 +1,15 @@
 # Validation record — October 13, 2026
 
-## Release 1.0.1 preparation — October 20, 2026
+## Release 1.0.1 validation — October 20, 2026
 
 - Version 1.0.1, versionCode 3, includes the direct-launch fix described below.
 - `testDebugUnitTest lintDebug assembleRelease` passed with the same temporary toolchain: three JVM tests passed, lint reported 0 errors / 16 warnings, and release vital lint passed.
 - Release APK manifest confirms version 1.0.1 / code 3, arm64-v8a, min SDK 29 and target SDK 35, with no debuggable flag. Its 16 KiB archive alignment check passed. The release script passed `bash -n`.
-- The built APK is unsigned. The original 1.0.0 signing key is required before signing and publishing an installable update; the newly created local debug key does not match the retained release certificate. No signed 1.0.1 APK or physical-device validation is claimed here.
+- The original 1.0.0 key was lost. At the owner's request, 1.0.1 was signed with a new password-protected PKCS12 RSA-4096 key, alias `actual`. It cannot update 1.0.0 in place; migration instructions require synchronizing and exporting budgets before uninstalling.
+- The full local release script passed, including APK signature verification and the pinned certificate comparison. A certificate mismatch was deliberately tested and rejected. APK signature scheme v3 and 16 KiB archive alignment verified successfully.
+- New certificate SHA-256: `a35d2bf5749c646485ff273dc10c3864235f0567216d8059da5b620c1c7d7d4a`. Signed APK SHA-256: `a1e11539510842102735d52fe1ea398de4d73062f133440c29fcc72c934431ad`.
+- A local backup ZIP containing the encrypted keystore and recovery instructions was restored and verified against the original key. The password is kept separately. Off-device backup remains the owner's required next step; the local archive alone does not survive a laptop wipe.
+- No physical-device validation of 1.0.1 is claimed.
 
 ## Direct-launch change — October 20, 2026
 
