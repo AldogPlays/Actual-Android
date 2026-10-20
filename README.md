@@ -4,13 +4,13 @@ A lightweight Android client for self-hosted [Actual Budget](https://actualbudge
 
 Open your budget in a dedicated app with no browser toolbar. Configure preferred and fallback servers, keep your login and local browser data, and connect over your LAN, reverse proxy, or Tailscale/Headscale network.
 
-**First release: 1.0.0.** Android 10/API 29 or newer; the downloadable APK targets arm64 devices. No Google Play Services, analytics, accounts for this wrapper, or hardcoded server address. Your own Actual server and its authentication still apply.
+**Version 1.0.1** removes the connection confirmation on configured launches. Android 10/API 29 or newer; the downloadable APK targets arm64 devices. No Google Play Services, analytics, accounts for this wrapper, or hardcoded server address. Your own Actual server and its authentication still apply.
 
 ## Download
 
 Download the signed APK from [GitHub Releases](https://github.com/AldogPlays/Actual-Android/releases). Use the release APK for updates; debug APKs built with another signing key cannot update it.
 
-See the [1.0.0 release notes](docs/release-notes-1.0.0.md) and [build and signing instructions](docs/BUILDING.md).
+See the [1.0.1 release notes](docs/release-notes-1.0.1.md) and [build and signing instructions](docs/BUILDING.md).
 
 ## Screenshots
 

@@ -38,9 +38,9 @@ adb install -r /private/path/Actual-Budget-release.apk
 Signing commands prompt for passwords; do not place passwords on command lines. A private release cannot update an APK signed with another debug/release key. Export/sync before uninstalling a conflicting build: uninstall deletes budgets. Debug builds signed with another key are not an update channel for the official release.
 
 
-## Signing identity for the official first release
+## Signing identity for official releases
 
-Version 1.0.0 uses versionCode 2 and retains the local certificate used by the owner's working initial APK. The certificate is labelled Android Debug, matching the retained-certificate approach used by Goveon. This does not make the release variant debuggable. The original private key must be backed up securely and retained for every future update. There is no signing configuration, keystore or password in Git. GitHub Actions is disabled.
+Version 1.0.1 uses versionCode 3; version 1.0.0 used versionCode 2. Updates must retain the local certificate used by the owner's working initial APK and 1.0.0 release (SHA-256 `65cbfff2f2b2db9645d1a7056e1f30e13c6792b94f68bdace31894cce1d34244`). The certificate is labelled Android Debug, matching the retained-certificate approach used by Goveon. This does not make the release variant debuggable. The original private key must be backed up securely and retained for every future update. There is no signing configuration, keystore or password in Git. GitHub Actions is disabled.
 
 For that retained local keystore, supply its private path and alias and let the script prompt for passwords:
 

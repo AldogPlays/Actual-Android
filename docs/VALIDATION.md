@@ -1,5 +1,12 @@
 # Validation record — October 13, 2026
 
+## Release 1.0.1 preparation — October 20, 2026
+
+- Version 1.0.1, versionCode 3, includes the direct-launch fix described below.
+- `testDebugUnitTest lintDebug assembleRelease` passed with the same temporary toolchain: three JVM tests passed, lint reported 0 errors / 16 warnings, and release vital lint passed.
+- Release APK manifest confirms version 1.0.1 / code 3, arm64-v8a, min SDK 29 and target SDK 35, with no debuggable flag. Its 16 KiB archive alignment check passed. The release script passed `bash -n`.
+- The built APK is unsigned. The original 1.0.0 signing key is required before signing and publishing an installable update; the newly created local debug key does not match the retained release certificate. No signed 1.0.1 APK or physical-device validation is claimed here.
+
 ## Direct-launch change — October 20, 2026
 
 - Configured cold launches, Connect and Retry now open the preferred URL through Gecko without a prerequisite native probe or connection review. Existing sessions still resume without reloading.
