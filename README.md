@@ -87,7 +87,7 @@ See [configuration and privacy details](docs/USAGE.md) for storage boundaries, c
 
 ## Testing and compatibility
 
-The initial APK was reported working by the owner, who supplied the screenshots above. Linux builds, JVM tests, lint, APK signatures and alignment have been checked. This does not establish every device acceptance criterion: exact GrapheneOS version, runtime diagnostic results, synchronization, rotation and network transitions still need separately recorded tests. See the [validation record](docs/VALIDATION.md) and [GeckoView investigation](docs/COMPATIBILITY.md).
+Linux builds, JVM tests, lint, APK signatures, and alignment have been checked. Screenshots show the initial APK running the budget, transaction, account, and report screens. The device model and GrapheneOS version were not recorded; runtime diagnostics, synchronization, rotation, and network transitions still need documented device tests. See the [validation record](docs/VALIDATION.md) and [GeckoView investigation](docs/COMPATIBILITY.md).
 
 Popup OAuth that depends on `window.opener`, WebAuthn and native date/color prompts are not implemented. The bundled engine makes the APK approximately 200 MiB. Other architecture builds are documented.
 
@@ -117,4 +117,4 @@ Actual-Android is an independent wrapper and is not an official Actual Budget ap
 
 Copyright 2026 Jeffrey Conton.
 
-Original wrapper source is licensed under the [MIT License](LICENSE). See [third-party notices](THIRD_PARTY_NOTICES.md). GeckoView is distributed under Mozilla's licenses, including MPL 2.0; its source and dependency notices remain available through [Mozilla](https://firefox-source-docs.mozilla.org/mobile/android/geckoview/). Screenshots illustrate the owner's app use and are not part of the wrapper source-code license grant.
+Original wrapper source is licensed under the [MIT License](LICENSE). See [third-party notices](THIRD_PARTY_NOTICES.md). GeckoView is distributed under Mozilla's licenses, including MPL 2.0; its source and dependency notices remain available through [Mozilla](https://firefox-source-docs.mozilla.org/mobile/android/geckoview/). Screenshots illustrate Actual Budget in the wrapper and are not part of the wrapper source-code license grant.

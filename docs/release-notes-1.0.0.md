@@ -22,7 +22,7 @@ Export/sync before uninstalling or clearing browser data. Signing-key mismatch r
 
 ## Validation and limits
 
-The owner reported successful use of the initial APK and provided screenshots of budgets, accounts, transaction entry and reports. Linux builds, unit tests, lint, APK signatures and alignment are checked separately. No independent GrapheneOS runtime, synchronization or SharedArrayBuffer diagnostic results have been recorded. The version/signing changes for 1.0.0 do not claim new functional device validation.
+The maintainer reported successful use of the initial APK, with screenshots of budgets, accounts, transaction entry, and reports. Linux builds, unit tests, lint, APK signatures, and alignment were checked separately. GrapheneOS runtime, synchronization, and SharedArrayBuffer diagnostic results were not recorded. These checks do not establish device behavior for the 1.0.0 release APK.
 
 Popup OAuth relying on `window.opener`, WebAuthn and native date/color prompts are not implemented. File operations may not survive process death. Different server origins retain separate local budgets and login state. The APK is approximately 200 MiB because it embeds GeckoView.
 

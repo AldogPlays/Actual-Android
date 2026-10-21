@@ -1,14 +1,14 @@
-# Validation record — October 13, 2026
+# Validation record
 
 ## Release 1.0.1 validation — October 20, 2026
 
 - Version 1.0.1, versionCode 3, includes the direct-launch fix described below.
 - `testDebugUnitTest lintDebug assembleRelease` passed with the same temporary toolchain: three JVM tests passed, lint reported 0 errors / 16 warnings, and release vital lint passed.
 - Release APK manifest confirms version 1.0.1 / code 3, arm64-v8a, min SDK 29 and target SDK 35, with no debuggable flag. Its 16 KiB archive alignment check passed. The release script passed `bash -n`.
-- The original 1.0.0 key was lost. At the owner's request, 1.0.1 was signed with a new password-protected PKCS12 RSA-4096 key, alias `actual`. It cannot update 1.0.0 in place; migration instructions require synchronizing and exporting budgets before uninstalling.
+- The original 1.0.0 key was lost. Version 1.0.1 was signed with a new password-protected PKCS12 RSA-4096 key, alias `actual`. It cannot update 1.0.0 in place; migration instructions require synchronizing and exporting budgets before uninstalling.
 - The full local release script passed, including APK signature verification and the pinned certificate comparison. A certificate mismatch was deliberately tested and rejected. APK signature scheme v3 and 16 KiB archive alignment verified successfully.
 - New certificate SHA-256: `a35d2bf5749c646485ff273dc10c3864235f0567216d8059da5b620c1c7d7d4a`. Signed APK SHA-256: `a1e11539510842102735d52fe1ea398de4d73062f133440c29fcc72c934431ad`.
-- A local backup ZIP containing the encrypted keystore and recovery instructions was restored and verified against the original key. The password is kept separately. Off-device backup remains the owner's required next step; the local archive alone does not survive a laptop wipe.
+- A local backup ZIP containing the encrypted keystore and recovery instructions was restored and verified against the original key. The password is kept separately. An off-device backup was not recorded in this validation; the local archive alone does not survive a laptop wipe.
 - No physical-device validation of 1.0.1 is claimed.
 
 ## Direct-launch change — October 20, 2026
@@ -23,7 +23,7 @@
 
 - Examined LubeLogger-Android reference commit `0ea4e69235b2ea4a6df3460980930dd9a13e6b1a`, including its native Activity, probes, WebView configuration and Gradle files.
 - Official stable Mozilla Maven metadata and GeckoView source JAR inspected. GeckoView pinned to `158.0.20261007201254`; API signatures were compiled against that AAR.
-- JDK 17, AGP 9.4.1, Kotlin 2.4.20 and Gradle 9.6.0 compiled with Android SDK 37.2 and build-tools 36.0.0. The initially available SDK 35 was insufficient; SDK 37.2 was installed in `/tmp/actual-sdk` for this run. The local SDK path is untracked and must be changed on another machine. The source project does not depend on `/tmp` paths.
+- JDK 17, AGP 9.4.1, Kotlin 2.4.20 and Gradle 9.6.0 compiled with Android SDK 37.2 and build-tools 36.0.0. SDK 35 is insufficient. Configure a local SDK 37.2 installation as described in [Building and signing](BUILDING.md); machine-specific SDK paths are not committed.
 - `./gradlew testDebugUnitTest lintDebug assembleDebug assembleRelease` completed successfully.
 - **3 unit tests, 0 failures:** ports/paths/IPv6/overlay hostname normalization and origin separation; rejected schemes/credentials/query/fragment/bad ports; local HTTP fixture with arbitrary successful response, 401, 503, same-origin redirect, external auth redirect and bounded redirect loop. These are pure JVM/network tests, not Android UI tests.
 - Android lint completed with **0 errors, 16 warnings**. Warnings cover intentionally older target SDK, supported-but-pinned Gradle, optional HTTP policy, arm64-only default (ChromeOS ABI), newer manifest back-callback attribute, English text/localization and the supplemental two-finger gesture accessibility lint. Settings remain available through the native launcher shortcut. The current target SDK is 35; increasing it requires testing newer local-network permission behavior and navigation changes.
@@ -45,15 +45,15 @@ Release output: `app/build/outputs/apk/release/app-release-unsigned.apk`.
 Tests: `app/build/reports/tests/testDebugUnitTest/index.html`.
 Lint: `app/build/reports/lint-results-debug.html`.
 
-## User-reported app testing — October 13, 2026
+## Reported device use — October 13, 2026
 
-After installing the initial debug build, the user reported that the app “works great” and supplied four screenshots showing the Actual budget, new-transaction, accounts and reports screens without browser chrome. This is user-reported app use, not an independently observed device test. It establishes successful opening and rendering of Actual on the user's device; the device/OS version, diagnostic boolean results and synchronization behavior were not separately recorded.
+The maintainer reported that the initial debug build opened Actual successfully. Four screenshots show the budget, new-transaction, accounts, and reports screens without browser chrome. The device model, OS version, diagnostic results, and synchronization behavior were not recorded. This report covers initial use, not the complete acceptance checklist or later release APKs.
 
-The screenshots are included at the user's request for repository presentation. No claim is made that all acceptance criteria below have been exercised. Release 1.0.0 retains the same app behavior and, at the owner’s request, the signing certificate used by the working initial APK.
+Release 1.0.0 retained the initial build's app behavior and signing certificate. Its build and signature checks are recorded separately below.
 
-## Not independently verified
+## Device testing still needed
 
-No Android device was connected (`adb devices` returned an empty list). There was no configured AVD, no emulator system image and no `/dev/kvm`. No APK was installed or launched by the build agent. The subsequent user report and screenshots are recorded above. There was no supplied Actual instance, login or test budget. The build agent has not independently verified GrapheneOS compatibility or synchronization; the user reports successful app use. Source-level availability of Gecko features is not a passing runtime result.
+Build validation did not include device or emulator tests, a test Actual server, or a disposable budget. GrapheneOS compatibility, synchronization, and the runtime checks below remain unverified beyond the reported initial use. API availability in Gecko source does not establish working behavior on a device.
 
 ## Physical-device acceptance checklist
 
@@ -61,7 +61,7 @@ Use a disposable budget and an arm64 GrapheneOS device with networking permitted
 
 | Test | Expected result | Status |
 |---|---|---|
-| Install debug APK | Android accepts package and launcher icon appears | User-reported app use; exact device not recorded |
+| Install debug APK | Android accepts package and launcher icon appears | Reported for initial build; exact device not recorded |
 | First launch | Native URL setup; no personal address prefilled | Not tested |
 | Connect, cold relaunch, Retry | Preferred URL opens without connection review or prerequisite probe; saved browser data retained | Not tested |
 | HTTPS custom port + path | Configured path/port used without truncation | Not tested |
@@ -69,7 +69,7 @@ Use a disposable budget and an arm64 GrapheneOS device with networking permitted
 | HTTP warning | Explicit warning; isolation failure accurately diagnosed | Not tested |
 | Invalid TLS certificate | Native failure; no certificate exception or silent bypass | Not tested |
 | Authentication / proxy redirects | Identification warning; new origin approval; login works | Not tested |
-| Main content | No address bar, tab bar, menu or permanent toolbar | Shown in user screenshots |
+| Main content | No address bar, tab bar, menu or permanent toolbar | Shown in initial-build screenshots |
 | Status/navigation/keyboard/cutout | Correct insets in portrait, landscape and gesture navigation | Not tested |
 | Launcher settings shortcut and two-finger hold | Native settings opens; returning retains current page | Not tested |
 | Back gesture | Gecko history first, then exits | Not tested |
@@ -110,4 +110,4 @@ Use a disposable budget and an arm64 GrapheneOS device with networking permitted
 - APK SHA-256: `961a5ee7bc3261be8d4e990ecb23ce59145127fa28db968f38e079fc3f075cd1`.
 - Signing certificate SHA-256: `65cbfff2f2b2db9645d1a7056e1f30e13c6792b94f68bdace31894cce1d34244`. This public fingerprint is not a private key.
 - `scripts/build-release.sh` syntax checked. The equivalent local build/align/sign/verify steps were run without recording passwords in source control. The interactive script was not exercised end-to-end with terminal password entry.
-- The 1.0.0 release APK itself has not yet been installed by the build agent. User-reported screenshots apply to the initial working build.
+- No device-install test of the 1.0.0 release APK was recorded. The screenshots apply to the initial debug build.

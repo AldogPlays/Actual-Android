@@ -55,7 +55,7 @@ export ACTUAL_KEY_ALIAS=actual
 
 For a separate privately built distribution, use its own key path/alias and explicitly set `ACTUAL_CERT_SHA256` to its certificate fingerprint; it will not update the official distribution. The script produces the signed APK and SHA256SUMS in ignored `release-artifacts/`. Tags/releases are created separately after checking source and certificate fingerprints; there is no CI workflow or automatic release publishing.
 
-## Surviving laptop wipes
+## Backing up and restoring the signing key
 
 Before wiping or replacing a computer:
 
