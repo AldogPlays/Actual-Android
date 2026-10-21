@@ -4,13 +4,13 @@ A lightweight Android client for self-hosted [Actual Budget](https://actualbudge
 
 Open your budget in a dedicated app with no browser toolbar. Configure preferred and fallback servers, keep your login and local browser data, and connect over your LAN, reverse proxy, or Tailscale/Headscale network.
 
-**Version 1.0.1** removes the connection confirmation on configured launches. Android 10/API 29 or newer; the downloadable APK targets arm64 devices. No Google Play Services, analytics, accounts for this wrapper, or hardcoded server address. Your own Actual server and its authentication still apply.
+Requires Android 10 (API 29) or newer and your own Actual Budget server. The downloadable APK targets arm64 devices. No Google Play Services or analytics; sign in with your existing server credentials.
 
 ## Download
 
 Download the signed APK from [GitHub Releases](https://github.com/AldogPlays/Actual-Android/releases). **1.0.0 users need a one-time reinstall because the original signing key was lost. Sync and export your budgets before uninstalling; uninstalling deletes local data.** See the [migration instructions](docs/release-notes-1.0.1.md). Future release APKs will retain the new signing identity for updates.
 
-See the [1.0.1 release notes](docs/release-notes-1.0.1.md) and [build and signing instructions](docs/BUILDING.md).
+Version 1.0.1 opens your saved server directly on later launches. See the [release notes](docs/release-notes-1.0.1.md) and [build and signing instructions](docs/BUILDING.md).
 
 ## Screenshots
 
@@ -117,4 +117,4 @@ Actual-Android is an independent wrapper and is not an official Actual Budget ap
 
 Copyright 2026 Jeffrey Conton.
 
-Original wrapper source is licensed under the [MIT License](LICENSE), matching Goveon. See [third-party notices](THIRD_PARTY_NOTICES.md). GeckoView is distributed under Mozilla's licenses, including MPL 2.0; its source and dependency notices remain available through [Mozilla](https://firefox-source-docs.mozilla.org/mobile/android/geckoview/). Screenshots illustrate the owner's app use and are not part of the wrapper source-code license grant.
+Original wrapper source is licensed under the [MIT License](LICENSE). See [third-party notices](THIRD_PARTY_NOTICES.md). GeckoView is distributed under Mozilla's licenses, including MPL 2.0; its source and dependency notices remain available through [Mozilla](https://firefox-source-docs.mozilla.org/mobile/android/geckoview/). Screenshots illustrate the owner's app use and are not part of the wrapper source-code license grant.
