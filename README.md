@@ -10,7 +10,7 @@ Requires Android 10 (API 29) or newer and your own Actual Budget server. The dow
 
 Download the signed APK from [GitHub Releases](https://github.com/AldogPlays/Actual-Android/releases). **1.0.0 users need a one-time reinstall because the original signing key was lost. Sync and export your budgets before uninstalling; uninstalling deletes local data.** See the [migration instructions](docs/release-notes-1.0.1.md). Future release APKs will retain the new signing identity for updates.
 
-Version 1.0.1 opens your saved server directly on later launches. See the [release notes](docs/release-notes-1.0.1.md) and [build and signing instructions](docs/BUILDING.md).
+Version 1.0.2 adds support for private CAs installed in Android settings, while preserving HTTPS certificate and hostname verification. See the [release notes](docs/release-notes-1.0.2.md), [HTTPS and private CA guide](docs/HTTPS.md), and [build and signing instructions](docs/BUILDING.md).
 
 ## Screenshots
 
@@ -80,6 +80,7 @@ The saved preferred server opens directly using the persistent browser profile. 
 - No Play Services, Firebase, telemetry collection, push integration, root or accessibility service.
 - Only Internet and network-state system permissions; file access uses Android's document picker.
 - TLS validation remains enabled. Unexpected navigation origins require approval; permissions other than persistent storage for the active server are denied.
+- Native HTTPS uses Android's system and user CA stores. GeckoView retains its built-in public roots and imports Android-installed CAs through its supported Enterprise Roots setting. No private CA is bundled and no server address is hardcoded.
 - Optional engine telemetry, update services and speculative networking are disabled through the bundled runtime configuration. DNS, certificate infrastructure and resources requested by your pages may still make network connections; no packet-capture audit has been performed.
 - Keys, passwords, local configuration, APKs and build output are excluded from source control.
 

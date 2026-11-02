@@ -18,6 +18,9 @@ class BudgetApplication : Application() {
         assets.open("gecko.yaml").use { input -> config.outputStream().use { input.copyTo(it) } }
         GeckoRuntime.create(this, GeckoRuntimeSettings.Builder()
             .configFilePath(config.absolutePath).javaScriptEnabled(true)
+            // Gecko has its own root store; Android's network security XML covers native probes.
+            // Import installed Android CAs without granting certificate or hostname exceptions.
+            .enterpriseRootsEnabled(true)
             .remoteDebuggingEnabled(false).aboutConfigEnabled(false)
             .extensionsWebAPIEnabled(false).consoleOutput(false).build()).also { it.notifyTelemetryPrefChanged(false) }
     }

@@ -1,1 +1,10 @@
-<network-security-config><base-config cleartextTrafficPermitted="true"><trust-anchors><certificates src="system"/></trust-anchors></base-config></network-security-config>
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Keep configurable HTTP support; HTTPS still validates the chain and hostname. -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

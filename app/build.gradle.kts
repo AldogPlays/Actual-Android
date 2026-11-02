@@ -2,7 +2,7 @@ plugins { id("com.android.application") }
 android {
     namespace = "app.actualbudget.wrapper"
     compileSdk { version = release(37) { minorApiLevel = 2 } }
-    defaultConfig { applicationId = "app.actualbudget.wrapper"; minSdk = 29; targetSdk = 35; versionCode = 3; versionName = "1.0.1"
+    defaultConfig { applicationId = "app.actualbudget.wrapper"; minSdk = 29; targetSdk = 35; versionCode = 4; versionName = "1.0.2"
         ndk { abiFilters += (project.findProperty("actualAbis") as? String ?: "arm64-v8a").split(",") }
     }
     buildFeatures { buildConfig = true }

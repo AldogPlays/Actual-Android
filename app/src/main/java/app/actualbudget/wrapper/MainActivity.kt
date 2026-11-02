@@ -98,7 +98,7 @@ class MainActivity : Activity() {
         val primary = input("Preferred Server URL", "https://actual.example.com:5006", servers.getOrNull(0)?.url.orEmpty())
         val fallback = input("Fallback Server URL (optional)", "https://192.168.1.100:5006", servers.getOrNull(1)?.url.orEmpty())
         val error = TextView(this).apply { setTextColor(Color.rgb(160,35,35)); p.addView(this) }
-        p.addView(TextView(this).apply { text = "HTTPS is recommended. HTTP exposes passwords and budget data and usually cannot run Actual. Different origins have separate logins and local budgets.\n\nOpen settings later by long-pressing the launcher icon and choosing Servers & settings, or with a two-finger long press in the app."; setPadding(0,dp(16),0,dp(16)) })
+        p.addView(TextView(this).apply { text = "HTTPS is recommended. Private CAs installed in Android settings are supported; the certificate must match your server hostname. HTTP exposes passwords and budget data and usually cannot run Actual. Different origins have separate logins and local budgets.\n\nOpen settings later by long-pressing the launcher icon and choosing Servers & settings, or with a two-finger long press in the app."; setPadding(0,dp(16),0,dp(16)) })
         fun values(): List<Server>? = try {
             listOf(Server.parse(primary.text.toString())) + fallback.text.toString().takeIf { it.isNotBlank() }?.let { listOf(Server.parse(it)) }.orEmpty()
         } catch (e: Exception) { error.text = e.message; null }

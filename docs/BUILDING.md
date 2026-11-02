@@ -12,7 +12,7 @@ sdk.dir=/path/to/Android/Sdk
 
 ```bash
 ./gradlew assembleDebug
-./gradlew testDebugUnitTest lintDebug
+./gradlew testDebugUnitTest lintDebug lintRelease assembleRelease
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
@@ -53,7 +53,9 @@ export ACTUAL_KEY_ALIAS=actual
 ./scripts/build-release.sh
 ```
 
-For a separate privately built distribution, use its own key path/alias and explicitly set `ACTUAL_CERT_SHA256` to its certificate fingerprint; it will not update the official distribution. The script produces the signed APK and SHA256SUMS in ignored `release-artifacts/`. Tags/releases are created separately after checking source and certificate fingerprints; there is no CI workflow or automatic release publishing.
+For a separate privately built distribution, use its own key path/alias and explicitly set `ACTUAL_CERT_SHA256` to its certificate fingerprint; it will not update the official distribution. Official releases must retain the pinned certificate without this override. The script builds debug/release variants, runs unit tests and both lint variants, then verifies signing identity and 16 KiB archive alignment before placing the APK in ignored `release-artifacts/`. Version 1.0.2 produces `actual-budget-1.0.2-arm64.apk`, a matching `.sha256` file, and `SHA256SUMS`. The version comes from Gradle instead of a duplicated filename constant. Failed signing checks leave no new distributable APK. Tags/releases are created separately after checking source and certificate fingerprints; there is no CI workflow or automatic release publishing.
+
+Passwords are prompted by default. For unattended local signing, optionally set `ACTUAL_KS_PASS_FILE` to a private password file outside Git; never put a password directly on the command line. `ANDROID_BUILD_TOOLS_VERSION` can select another installed build-tools version (default 36.0.0).
 
 ## Backing up and restoring the signing key
 
