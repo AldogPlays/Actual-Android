@@ -8,7 +8,6 @@ import android.net.*
 import android.os.*
 import android.view.*
 import android.widget.*
-import org.json.JSONObject
 import org.mozilla.geckoview.*
 import java.util.concurrent.Executors
 
@@ -28,6 +27,10 @@ class MainActivity : Activity() {
     private var filePrompt: GeckoSession.PromptDelegate.FilePrompt? = null
     private var fileResult: GeckoResult<GeckoSession.PromptDelegate.PromptResponse>? = null
     private var download: WebResponse? = null
+    private val diagnosticAdapter by lazy {
+        GeckoDiagnosticsAdapter(app.runtime, { !isDestroyed && app.session === it }, { app.active?.origin })
+    }
+    private var diagnosticBinding: PageDiagnostics<GeckoSession, WebExtension>.Binding? = null
     private val networkCheck = Runnable { checkConnection() }
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) = scheduleCheck()
@@ -119,7 +122,7 @@ class MainActivity : Activity() {
         if(app.session != null) p.button("Return to Actual") { showBrowser() }
         p.button("Clear browser data…") {
             confirm("Delete all local browser data?", "This permanently deletes local budgets, unsynced changes, cookies, logins, caches and permissions for every origin. Export and synchronize your budgets first. This cannot be undone.") {
-                app.session?.close(); app.session = null; app.active = null; app.location = null; app.state = null; app.diagnostics = null
+                app.session?.close(); app.session = null; app.active = null; app.location = null; app.state = null; app.diagnostics.clear()
                 app.runtime.storageController.clearData(StorageController.ClearFlags.ALL).accept({ settings("Browser data cleared. Server settings are preserved.") }, { settings("Could not clear all browser data. Try again before reconnecting.") })
             }
         }
@@ -149,27 +152,23 @@ class MainActivity : Activity() {
             app.session = GeckoSession().apply { open(app.runtime) }
             bindSession()
         }
-        app.active = server; app.diagnostics = null; app.state = null; app.location = null
+        app.active = server; app.diagnostics.clear(); app.state = null; app.location = null
         showBrowser()
         val session = app.session!!
         val token = generation
         // Install before first navigation so a fast local page cannot miss its diagnostic script.
-        app.runtime.webExtensionController.ensureBuiltIn("resource://android/assets/diagnostics/", "diagnostics@actualbudget.wrapper").accept({ extension ->
-            if(token == generation && !isDestroyed && app.session === session) {
-                app.extension = extension; bindSession(); session.loadUri(server.url)
-            }
-        }, {
-            if(token == generation && !isDestroyed && app.session === session) {
-                unavailable("Could not initialize the compatibility diagnostic extension. Retry before opening Actual.")
-            }
-        })
+        app.diagnostics.binding(session, diagnosticAdapter).beforeNavigation(
+            isCurrent = { token == generation },
+            onReady = { bindSession(); session.loadUri(server.url) },
+            onFailure = { unavailable("Could not initialize the compatibility diagnostic extension. Retry before opening Actual.") }
+        )
     }
     private fun bindSession() {
         val session = app.session ?: return
         canBack = app.canBack
         session.navigationDelegate = object : GeckoSession.NavigationDelegate {
             override fun onCanGoBack(session: GeckoSession, value: Boolean) { canBack = value; app.canBack = value }
-            override fun onLocationChange(session: GeckoSession, url: String?, perms: MutableList<GeckoSession.PermissionDelegate.ContentPermission>, hasUserGesture: Boolean) { app.location = url; app.diagnostics = null }
+            override fun onLocationChange(session: GeckoSession, url: String?, perms: MutableList<GeckoSession.PermissionDelegate.ContentPermission>, hasUserGesture: Boolean) { app.location = url; app.diagnostics.clear() }
             override fun onLoadRequest(session: GeckoSession, request: GeckoSession.NavigationDelegate.LoadRequest): GeckoResult<AllowOrDeny> {
                 val origin = Server.origin(request.uri)
                 val allowed = origin != null && (origin == app.active?.origin || origin in approved)
@@ -223,20 +222,7 @@ class MainActivity : Activity() {
             }
         }
         session.promptDelegate = prompts()
-        app.runtime.webExtensionController.ensureBuiltIn("resource://android/assets/diagnostics/", "diagnostics@actualbudget.wrapper").accept({ extension ->
-            if(extension == null) { app.diagnostics = JSONObject().put("error", "Diagnostic extension unavailable."); return@accept }
-            app.extension = extension
-            if(isDestroyed || app.session !== session) return@accept
-            session.webExtensionController.setMessageDelegate(extension, object : WebExtension.MessageDelegate {
-                override fun onMessage(nativeApp: String, message: Any, sender: WebExtension.MessageSender): GeckoResult<Any>? {
-                    if(sender.session !== session || !sender.isTopLevel || Server.origin(sender.url) != app.active?.origin) return null
-                    val data = message as? JSONObject ?: return null
-                    if(data.optString("url") != sender.url) return null
-                    app.diagnostics = data
-                    return null
-                }
-            }, "actualDiagnostics")
-        }, { app.diagnostics = JSONObject().put("error", "Diagnostic extension could not initialize.") })
+        diagnosticBinding = app.diagnostics.binding(session, diagnosticAdapter).also { it.attach() }
     }
     private fun showBrowser() {
         val session = app.session ?: return
@@ -264,10 +250,9 @@ class MainActivity : Activity() {
         p.button("Diagnostics") { diagnostics() }
     }
     private fun diagnostics() {
-        val d = app.diagnostics?.takeIf { it.optString("url") == app.location }
-        val keys = listOf("secureContext", "crossOriginIsolated", "sharedArrayBufferSupported", "wasmSupported", "workersSupported", "indexedDBSupported", "cacheSupported", "serviceWorkerSupported")
-        val result = if(d == null) "No result yet. Open your server and wait for page loading, then return here. Authentication pages may fail isolation checks until Actual is loaded." else keys.joinToString("\n") { "$it: ${if(d.has(it)) d.optBoolean(it).toString() else "unknown"}" } + "\n\nEngine: ${d.optString("engine", "unknown")}\n${d.optString("error") }"
-        val required = keys.take(4).all { d?.optBoolean(it) == true }
+        val d = app.diagnostics.snapshot(app.location)
+        val result = if(d == null) "No result yet. Open your server and wait for page loading, then return here. Authentication pages may fail isolation checks until Actual is loaded." else PageDiagnostics.Capability.entries.joinToString("\n") { "${it.field}: ${d.checks[it]?.toString() ?: "unknown"}" } + "\n\nEngine: ${d.engine}\n${d.error}"
+        val required = d?.requiredPresent == true
         val p = page("GeckoView diagnostics", "Bundled GeckoView: 158.0.20261007201254\n\n$result\n\n${if(required) "Required API presence checks pass. Actual initialization and synchronization still need verification." else "Compatibility is unverified or a required check failed. Actual requires a secure context, COOP same-origin, COEP require-corp, SharedArrayBuffer and WebAssembly. No security checks are bypassed."}")
         p.button("Refresh results") { diagnostics() }
         if(app.session != null) p.button("Return to Actual") { showBrowser() }
@@ -331,7 +316,7 @@ class MainActivity : Activity() {
         download?.body?.close(); download = null
         fileResult?.complete(filePrompt!!.dismiss()); fileResult = null; filePrompt = null
         app.session?.apply { navigationDelegate = null; progressDelegate = null; contentDelegate = null; promptDelegate = null; permissionDelegate = null
-            app.extension?.let { webExtensionController.setMessageDelegate(it, null, "actualDiagnostics") }
+            diagnosticBinding?.detach()
         }
         super.onDestroy()
     }
