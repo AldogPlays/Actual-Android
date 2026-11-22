@@ -19,7 +19,6 @@ class MainActivity : Activity() {
     private val worker = Executors.newSingleThreadExecutor()
     private val handler = Handler(Looper.getMainLooper())
     private var generation = 0
-    private var busy = false
     private var browsing = false
     private var canBack = false
     private var view: GeckoView? = null
@@ -29,6 +28,21 @@ class MainActivity : Activity() {
     private var fileResult: GeckoResult<GeckoSession.PromptDelegate.PromptResponse>? = null
     private var download: WebResponse? = null
     private val networkCheck = Runnable { checkConnection() }
+    private val recovery = ConnectionRecovery(
+        probe = ServerProbe::check,
+        execute = { worker.execute(it) },
+        deliver = { runOnUiThread(it) },
+        isBrowsing = { browsing },
+        onOutcome = { outcome ->
+            when (outcome) {
+                is ConnectionRecovery.Outcome.Open -> load(outcome.server)
+                ConnectionRecovery.Outcome.Checking -> page("Connection interrupted", "Checking servers. Local browser data is preserved.").button("Configure servers") { settings() }
+                is ConnectionRecovery.Outcome.Review -> review(outcome.server, outcome.health)
+                is ConnectionRecovery.Outcome.Unavailable -> showUnavailable(outcome.reason)
+                ConnectionRecovery.Outcome.BackgroundFailure -> Toast.makeText(this, "Server check failed. You can keep using this page or open Servers & settings.", Toast.LENGTH_LONG).show()
+            }
+        }
+    )
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) = scheduleCheck()
         override fun onLost(network: Network) = scheduleCheck()
@@ -89,7 +103,7 @@ class MainActivity : Activity() {
     }
     private fun LinearLayout.button(label: String, action: () -> Unit) { addView(Button(this@MainActivity).apply { text = label; setOnClickListener { action() } }) }
     private fun settings(message: String = "Connect to your self-hosted Actual Budget server.") {
-        generation++; busy = false
+        generation++; recovery.invalidate()
         val p = page("Actual Budget", message)
         fun input(label: String, example: String, value: String): EditText {
             p.addView(TextView(this).apply { text = label })
@@ -129,9 +143,7 @@ class MainActivity : Activity() {
         AlertDialog.Builder(this).setTitle(title).setMessage(message).setNegativeButton("Cancel", null).setPositiveButton("Continue") { _,_ -> action() }.show()
     }
     private fun connect() {
-        val preferred = servers.firstOrNull() ?: return settings()
-        // Let Gecko use its authenticated profile and cache before considering failover.
-        load(preferred)
+        if (servers.isEmpty()) settings() else recovery.connect(servers)
     }
     private fun review(server: Server, health: Health) {
         val old = app.active
@@ -144,7 +156,7 @@ class MainActivity : Activity() {
         p.button("Configure servers") { settings() }
     }
     private fun load(server: Server) {
-        generation++; busy = false
+        generation++; recovery.invalidate()
         if(app.session == null) {
             app.session = GeckoSession().apply { open(app.runtime) }
             bindSession()
@@ -257,7 +269,9 @@ class MainActivity : Activity() {
         insets(root); setContentView(root)
     }
     private fun unavailable(reason: String) {
-        busy = false
+        recovery.attention(reason)
+    }
+    private fun showUnavailable(reason: String) {
         val p = page("Connection needs attention", reason + "\n\nLocal budgets and browser data are preserved.")
         p.button("Retry") { connect() }; p.button("Configure servers") { settings() }
         if(app.session != null) p.button("Return to cached page") { showBrowser() }
@@ -276,37 +290,12 @@ class MainActivity : Activity() {
     private fun scheduleCheck() { handler.post { handler.removeCallbacks(networkCheck); if(browsing) handler.postDelayed(networkCheck, 3000) } }
     private fun checkConnection() {
         val current = app.active ?: return
-        if(busy || !browsing) return
-        busy = true; val token = generation
-        worker.execute {
-            val h = ServerProbe.check(current)
-            // One second probe protects against transient loss; no recurring retry loop.
-            val second = if(h.kind == HealthKind.UNREACHABLE) ServerProbe.check(current) else h
-            runOnUiThread {
-                if(token != generation || isDestroyed) return@runOnUiThread
-                busy = false
-                if(!browsing) return@runOnUiThread
-                // A native probe has no browser cookies and cannot judge cached-page usability.
-                // Only an actual Gecko load failure may replace the page or offer failover.
-                if(!second.usable) Toast.makeText(this, "Server check failed. You can keep using this page or open Servers & settings.", Toast.LENGTH_LONG).show()
-            }
-        }
+        recovery.checkConnection(current)
     }
     private fun recoverAfterLoadError() {
         val current = app.active ?: return
-        val token = ++generation
-        page("Connection interrupted", "Checking servers. Local browser data is preserved.").button("Configure servers") { settings() }
-        busy = true
-        worker.execute {
-            val h = ServerProbe.check(current)
-            val replacement = if(!h.usable && h.kind != HealthKind.TLS_ERROR) servers.filter { it != current }.map { it to ServerProbe.check(it) }.firstOrNull { it.second.usable } else null
-            runOnUiThread {
-                if(token != generation || isDestroyed) return@runOnUiThread
-                busy = false
-                if(replacement != null) review(replacement.first, replacement.second)
-                else unavailable(if(h.usable) "Server responds, but the browser page load failed. Retry or review diagnostics." else h.detail)
-            }
-        }
+        generation++
+        recovery.recoverAfterLoadError(current, servers)
     }
     private fun openExternal(url: String) {
         try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addCategory(Intent.CATEGORY_BROWSABLE)) }
@@ -326,7 +315,7 @@ class MainActivity : Activity() {
         super.onStop()
     }
     override fun onDestroy() {
-        generation++; handler.removeCallbacksAndMessages(null); worker.shutdownNow()
+        generation++; recovery.invalidate(); handler.removeCallbacksAndMessages(null); worker.shutdownNow()
         view?.releaseSession()
         download?.body?.close(); download = null
         fileResult?.complete(filePrompt!!.dismiss()); fileResult = null; filePrompt = null
