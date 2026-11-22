@@ -10,8 +10,7 @@ class BudgetApplication : Application() {
     var location: String? = null
     var canBack = false
     var state: GeckoSession.SessionState? = null
-    var diagnostics: org.json.JSONObject? = null
-    var extension: WebExtension? = null
+    val diagnostics = PageDiagnostics<GeckoSession, WebExtension>()
     val runtime: GeckoRuntime by lazy {
         // Private configuration file prevents external debug configuration injection.
         val config = File(noBackupFilesDir, "gecko.yaml")
